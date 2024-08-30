@@ -3,7 +3,7 @@ Type: Package
 Title: Temporal Cell-Cell Interaction Analysis in Single-Cell RNA-seq Data
 Version: 1.0.0
 Authors@R: c(person("Zaoqu", "Liu", email = "liuzaoqu@163.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-0452-742X")))
-Description: DataChat provides a curated database and innovative analytical pipelines to explore cancer biomarkers. It is designed as an intuitive tool that allows users to comprehensively assess the clinical significance and biological functions of cancer biomarkers.
+Description: This package offers tools to analyze temporal correlations in cell-cell communication, specifically calculating dynamic ligand-receptor interactions over pseudotime and inferring the influence of one cell type on another's evolution, providing insights into the timing and impact of cellular interactions in biological processes.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

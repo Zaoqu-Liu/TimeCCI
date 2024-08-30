@@ -2,24 +2,24 @@
 
 Understanding cell-cell interactions is pivotal for unraveling the complexities of biological processes such as development, immune responses, and cancer progression. The temporal dynamics of these interactions can offer significant insights into how cells communicate and influence each other over time. To facilitate this analysis, two specialized functions have been developed, each addressing a critical aspect of temporal cell-cell communication:
 
-## `TemporalCCI1`
+### `TemporalCCI1`
 
 This function is designed to calculate the temporal correlations between ligands expressed by one cell type and receptors expressed by another cell type. By analyzing how these interactions evolve across a defined pseudotime trajectory, `TemporalCCI1` helps researchers identify dynamic patterns in cell communication. This approach is particularly useful in studies that require an understanding of the timing and evolution of cell-cell interactions, such as developmental biology or cancer progression research.
 
-## `TemporalCCI2`
+### `TemporalCCI2`
 
 `TemporalCCI2` extends the analysis by inferring the impact of one cell type on the evolutionary process of another based on their communication. The function divides the pseudotime into discrete intervals and utilizes the CellChat framework to analyze ligand-receptor interactions across these stages. By doing so, `TemporalCCI2` provides insights into how one cell type might influence the development or differentiation of another, helping to identify critical communication pathways that drive cellular evolution.
 
 Together, these functions offer a comprehensive toolkit for exploring the temporal dynamics of cell-cell interactions, enabling a more nuanced understanding of how cellular communication shapes biological processes over time.
 
 
-## Installation
+### Installation
 ```r
 # install.packages("devtools")
 devtools::install_github('Zaoqu-Liu/TimeCCI')
 ```
 
-## TemporalCCI1 Tutorial
+### TemporalCCI1 Tutorial
 This function performs a temporal cell-cell interaction (CCI) analysis between two specified cell types over pseudotime.
 It leverages ligand-receptor interaction data to assess the correlation between ligand expression in one cell type
 and receptor expression in another across a defined pseudotime trajectory.
@@ -106,7 +106,7 @@ sc$Pseudotime <- cds2$Pseudotime
 tmp1 <- TemporalCCI1(sc)
 ```
 
-## TemporalCCI2 Tutorial
+### TemporalCCI2 Tutorial
 This function first divides the pseudotime into discrete intervals and assigns each cell to an interval. It then uses
 the CellChat package to analyze cell-cell communication based on ligand-receptor interactions, computing the communication
 probabilities for each interaction across the pseudotime intervals. The function also performs correlation analyses

@@ -1,12 +1,7 @@
-
-
-
-
-# TemporalCCI Usage Tutorial
-
-This tutorial demonstrates how to use the `TemporalCCI1` function with an example Seurat object. We will preprocess the data, perform dimensionality reduction, calculate pseudotime using Monocle, and analyze cell-cell interactions over pseudotime using `TemporalCCI1`.
-
-## Complete Code
+# TemporalCCI1 Tutorial
+This function performs a temporal cell-cell interaction (CCI) analysis between two specified cell types over pseudotime.
+It leverages ligand-receptor interaction data to assess the correlation between ligand expression in one cell type
+and receptor expression in another across a defined pseudotime trajectory.
 
 ```r
 # Clear workspace and load necessary libraries
@@ -15,10 +10,15 @@ library(Seurat)
 library(tidyverse)
 library(monocle)
 
-# Load the Seurat object (example)
-sc <- seu.example
+# Load the Seurat object
+sc <- readRDS('example.rds')
 
-# Preprocessing steps: normalization, feature selection, scaling, PCA, and UMAP
+# Preprocess the data: normalization, feature selection, scaling, PCA, and UMAP
+# - NormalizeData: Normalizes the expression data for each gene.
+# - FindVariableFeatures: Identifies the most variable genes for downstream analysis.
+# - ScaleData: Scales the data for PCA.
+# - RunPCA: Performs Principal Component Analysis for dimensionality reduction.
+# - RunUMAP: Further reduces the data to 2D space for visualization.
 sc <- sc %>%
   NormalizeData() %>%
   FindVariableFeatures(nfeatures = 500) %>%
@@ -26,23 +26,23 @@ sc <- sc %>%
   RunPCA() %>%
   RunUMAP(reduction = 'pca', dims = 1:30)
 
-# Set cell identities
+# Set cell identities based on the cell type annotation in metadata
 Idents(sc) <- sc$Cell.Type
 
-# Visualize the UMAP plot
+# Visualize the UMAP plot to see the clustering of cells
 UMAPPlot(sc)
 
-# Convert Seurat data to Monocle's format
+# Convert Seurat data to Monocle's format for pseudotime analysis
 expr_matrix <- as(as.matrix(sc@assays$RNA@counts), 'sparseMatrix')
 dim(expr_matrix)
 
-# Extract metadata and prepare feature data
-p_data <- sc@meta.data
+# Extract metadata and prepare feature data for Monocle
+p_data <- sc@meta.data 
 p_data$celltype <- sc@active.ident
 f_data <- data.frame(gene_short_name = row.names(sc), row.names = row.names(sc))
 
 # Create AnnotatedDataFrame objects for phenodata and featuredata
-pd <- new('AnnotatedDataFrame', data = p_data)
+pd <- new('AnnotatedDataFrame', data = p_data) 
 fd <- new('AnnotatedDataFrame', data = f_data)
 
 # Create the CellDataSet object for Monocle
@@ -81,5 +81,94 @@ plot_cell_trajectory(cds2, color_by = 'celltype')
 # Add pseudotime data to the Seurat object
 sc$Pseudotime <- cds2$Pseudotime
 
-# Perform temporal cell-cell interaction analysis
+# Perform temporal cell-cell interaction analysis using TemporalCCI1
 tmp1 <- TemporalCCI1(sc)
+```
+
+# TemporalCCI2 Tutorial
+This function first divides the pseudotime into discrete intervals and assigns each cell to an interval. It then uses
+the CellChat package to analyze cell-cell communication based on ligand-receptor interactions, computing the communication
+probabilities for each interaction across the pseudotime intervals. The function also performs correlation analyses
+between these probabilities and the pseudotime stages, providing insights into how interactions evolve over time.
+
+```r
+# Clear the workspace and start a new analysis
+rm(list = ls())
+library(Seurat)
+library(tidyverse)
+library(monocle)
+
+# Load another Seurat object for analysis
+sc <- seu.example
+
+# Subset the data into two groups: epithelial cells (EpiT) and mCAF cells
+sc_epit <- subset(sc, Cell.Type == 'EpiT')
+sc_mcaf <- subset(sc, Cell.Type == 'mCAF')
+
+# Preprocess the mCAF subset: normalization, feature selection, scaling, PCA, and UMAP
+sc_mcaf <- sc_mcaf %>%
+  NormalizeData() %>%
+  FindVariableFeatures(nfeatures = 500) %>%
+  ScaleData() %>%
+  RunPCA() %>%
+  RunUMAP(reduction = 'pca', dims = 1:30)
+
+# Convert the mCAF data to Monocle's format for pseudotime analysis
+expr_matrix <- as(as.matrix(sc_mcaf@assays$RNA@counts), 'sparseMatrix')
+dim(expr_matrix)
+
+# Extract metadata and prepare feature data for Monocle
+p_data <- sc_mcaf@meta.data 
+p_data$celltype <- sc_mcaf@active.ident
+f_data <- data.frame(gene_short_name = row.names(sc_mcaf), row.names = row.names(sc_mcaf))
+
+# Create AnnotatedDataFrame objects for phenodata and featuredata
+pd <- new('AnnotatedDataFrame', data = p_data) 
+fd <- new('AnnotatedDataFrame', data = f_data)
+
+# Create the CellDataSet object for Monocle
+cds <- newCellDataSet(expr_matrix,
+                      phenoData = pd,
+                      featureData = fd,
+                      lowerDetectionLimit = 0.5,
+                      expressionFamily = negbinomial.size())
+
+# Estimate size factors and dispersions for normalization
+cds <- estimateSizeFactors(cds)
+cds <- estimateDispersions(cds)
+
+# Identify highly variable genes
+disp_table <- dispersionTable(cds)
+disp.gene <- subset(disp_table, mean_expression >= 0.1 & dispersion_empirical >= dispersion_fit)$gene_id
+
+# Perform dimensionality reduction and order cells using these genes
+cds2 <- setOrderingFilter(cds, ordering_genes = disp.gene)
+cds2 <- reduceDimension(cds2, method = 'DDRTree', max_components = 2, num_dim = 10, cores = 13)
+cds2 <- orderCells(cds2)
+
+# Plot the pseudotime trajectory for mCAF cells
+plot_cell_trajectory(cds2)
+
+# Add pseudotime data to the mCAF Seurat object
+sc_mcaf$Pseudotime <- cds2$Pseudotime
+
+# Merge the mCAF and epithelial cell subsets back together
+sc <- merge(sc_epit, sc_mcaf)
+
+# Preprocess the merged dataset: normalization, feature selection, scaling, PCA, and UMAP
+sc <- sc %>%
+  NormalizeData() %>%
+  FindVariableFeatures(nfeatures = 500) %>%
+  ScaleData() %>%
+  RunPCA() %>%
+  RunUMAP(reduction = 'pca', dims = 1:30)
+
+# Set cell identities based on the cell type annotation in metadata
+Idents(sc) <- sc$Cell.Type
+
+# Visualize the UMAP plot for the merged dataset
+UMAPPlot(sc)
+
+# Perform temporal cell-cell interaction analysis using TemporalCCI2
+tmp2 <- TemporalCCI2(sc)
+```

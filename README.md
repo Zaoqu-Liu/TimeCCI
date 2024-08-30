@@ -39,12 +39,7 @@ library(TimeCCI)
 # Load the Seurat object
 sc <- seu.example
 
-# Preprocess the data: normalization, feature selection, scaling, PCA, and UMAP
-# - NormalizeData: Normalizes the expression data for each gene.
-# - FindVariableFeatures: Identifies the most variable genes for downstream analysis.
-# - ScaleData: Scales the data for PCA.
-# - RunPCA: Performs Principal Component Analysis for dimensionality reduction.
-# - RunUMAP: Further reduces the data to 2D space for visualization.
+# Preprocess the data: normalization, feature selection, scaling, PCA, and UMAP=
 sc <- sc %>%
   NormalizeData() %>%
   FindVariableFeatures(nfeatures = 500) %>%

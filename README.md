@@ -15,7 +15,11 @@ Together, these functions offer a comprehensive toolkit for exploring the tempor
 
 ### Installation
 ```r
-# install.packages("devtools")
+install.packages(c("tidyr", "dplyr", "furrr", "future", "tibble"))
+devtools::install_github("jinworks/CellChat")
+remotes::install_version("SeuratObject", "4.1.4", repos = c("https://satijalab.r-universe.dev", getOption("repos")))
+remotes::install_version("Seurat", "4.4.0", repos = c("https://satijalab.r-universe.dev", getOption("repos")))
+devtools::install_github("shenorrLabTRDF/cellAlign")
 devtools::install_github('Zaoqu-Liu/TimeCCI')
 ```
 

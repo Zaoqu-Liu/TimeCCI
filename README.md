@@ -34,9 +34,10 @@ rm(list = ls())
 library(Seurat)
 library(tidyverse)
 library(monocle)
+library(TimeCCI)
 
 # Load the Seurat object
-sc <- readRDS('example.rds')
+sc <- seu.example
 
 # Preprocess the data: normalization, feature selection, scaling, PCA, and UMAP
 # - NormalizeData: Normalizes the expression data for each gene.
@@ -122,6 +123,7 @@ rm(list = ls())
 library(Seurat)
 library(tidyverse)
 library(monocle)
+library(TimeCCI)
 
 # Load another Seurat object for analysis
 sc <- seu.example
